@@ -5,7 +5,7 @@ import SwiftUI
 /// Recreation of the Figma "10-signup" screen (Step 1 of 3), backed by Supabase Auth.
 struct SignupView: View {
     @State private var viewModel = SignupViewModel()
-    @State private var showLogin = false
+    @Environment(\.dismiss) private var dismiss
 
     var body: some View {
         ScrollView {
@@ -68,6 +68,8 @@ struct SignupView: View {
         }
         .background(Color.grainBackground)
         .preferredColorScheme(.dark)
+        .navigationBarBackButtonHidden(true)
+        .toolbar(.hidden, for: .navigationBar)
         .alert(
             "Couldn't create account",
             isPresented: Binding(
@@ -80,12 +82,9 @@ struct SignupView: View {
             Text(viewModel.errorMessage ?? "")
         }
         .alert("Account created", isPresented: $viewModel.didSignUp) {
-            Button("OK", role: .cancel) {}
+            Button("OK", role: .cancel) { dismiss() }
         } message: {
             Text("Check your email to confirm your address.")
-        }
-        .fullScreenCover(isPresented: $showLogin) {
-            LoginView()
         }
     }
 
@@ -94,7 +93,7 @@ struct SignupView: View {
     private var header: some View {
         HStack {
             Button {
-                // Handle back navigation
+                dismiss()
             } label: {
                 Image(systemName: "chevron.left")
                     .font(.system(size: 18, weight: .semibold))
@@ -153,18 +152,22 @@ struct SignupView: View {
         }
     }
 
+    @ViewBuilder
     private var passwordStrength: some View {
-        HStack(spacing: 12) {
-            HStack(spacing: 6) {
-                ForEach(0..<4, id: \.self) { index in
-                    Capsule()
-                        .fill(index < 3 ? Color.grainGreen : Color.grainField)
-                        .frame(height: 4)
+        if !viewModel.password.isEmpty {
+            let strength = viewModel.passwordStrength
+            HStack(spacing: 12) {
+                HStack(spacing: 6) {
+                    ForEach(0..<4, id: \.self) { index in
+                        Capsule()
+                            .fill(index < strength.filledBars ? strength.color : Color.grainField)
+                            .frame(height: 4)
+                    }
                 }
+                Text(strength.label)
+                    .font(.system(size: 11.5, weight: .bold))
+                    .foregroundStyle(strength.color)
             }
-            Text("Strong")
-                .font(.system(size: 11.5, weight: .bold))
-                .foregroundStyle(Color.grainGreen)
         }
     }
 
@@ -206,7 +209,7 @@ struct SignupView: View {
             Text("Already have an account?")
                 .foregroundStyle(Color.grainTextMuted)
             Button {
-                showLogin = true
+                dismiss()
             } label: {
                 Text("Log in")
                     .fontWeight(.bold)

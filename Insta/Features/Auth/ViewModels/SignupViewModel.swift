@@ -16,6 +16,11 @@ final class SignupViewModel {
     var errorMessage: String?
     var didSignUp = false
 
+    /// Live strength rating of the entered password, for the meter UI.
+    var passwordStrength: PasswordStrength {
+        PasswordStrength.evaluate(password)
+    }
+
     /// Whether the form is complete enough to submit.
     var canSubmit: Bool {
         !fullName.isEmpty
@@ -30,6 +35,16 @@ final class SignupViewModel {
     /// as user metadata. Errors are surfaced through `errorMessage`.
     func signUp() async {
         errorMessage = nil
+
+        guard email.isValidEmail else {
+            errorMessage = "Please enter a valid email address."
+            return
+        }
+
+        guard password.meetsPasswordRequirements else {
+            errorMessage = "Password must be at least 8 characters and include both letters and numbers."
+            return
+        }
 
         guard agreedToTerms else {
             errorMessage = "Please agree to the Terms and Privacy Policy to continue."

@@ -24,6 +24,11 @@ final class LoginViewModel {
     func logIn() async {
         errorMessage = nil
 
+        guard email.isValidEmail else {
+            errorMessage = "Please enter a valid email address."
+            return
+        }
+
         isSubmitting = true
         defer { isSubmitting = false }
 
