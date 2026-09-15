@@ -50,7 +50,7 @@ struct ImageCropView: View {
                         Circle().strokeBorder(.white.opacity(0.9), lineWidth: 2)
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .gesture(magnification.simultaneously(with: drag))
+                    .gesture(magnification(side: side).simultaneously(with: drag(side: side)))
             }
             .overlay(alignment: .bottom) { controls(side: side) }
             .overlay(alignment: .top) {
@@ -79,19 +79,38 @@ struct ImageCropView: View {
 
     // MARK: Gestures
 
-    private var magnification: some Gesture {
+    private func magnification(side: CGFloat) -> some Gesture {
         MagnificationGesture()
             .updating($gestureScale) { value, state, _ in state = value }
-            .onEnded { value in scale = max(scale * value, 1) }
+            .onEnded { value in
+                scale = max(scale * value, 1)
+                offset = clampedOffset(offset, side: side, scale: scale)
+            }
     }
 
-    private var drag: some Gesture {
+    private func drag(side: CGFloat) -> some Gesture {
         DragGesture()
             .updating($gestureOffset) { value, state, _ in state = value.translation }
             .onEnded { value in
-                offset.width += value.translation.width
-                offset.height += value.translation.height
+                let proposed = CGSize(
+                    width: offset.width + value.translation.width,
+                    height: offset.height + value.translation.height
+                )
+                offset = clampedOffset(proposed, side: side, scale: scale)
             }
+    }
+
+    /// Constrains the pan offset so the crop window never extends past the
+    /// image, which would otherwise bake black edges into the exported avatar.
+    private func clampedOffset(_ proposed: CGSize, side: CGFloat, scale: CGFloat) -> CGSize {
+        let fillScale = max(side / image.size.width, side / image.size.height)
+        let k = fillScale * scale
+        let maxX = max(0, (image.size.width * k - side) / 2)
+        let maxY = max(0, (image.size.height * k - side) / 2)
+        return CGSize(
+            width: min(max(proposed.width, -maxX), maxX),
+            height: min(max(proposed.height, -maxY), maxY)
+        )
     }
 
     // MARK: Controls

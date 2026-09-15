@@ -51,6 +51,17 @@ struct ProfileView: View {
                 Task { await viewModel.uploadAvatar(data) }
             }
         }
+        .alert(
+            "Something went wrong",
+            isPresented: Binding(
+                get: { viewModel.errorMessage != nil },
+                set: { if !$0 { viewModel.errorMessage = nil } }
+            )
+        ) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(viewModel.errorMessage ?? "")
+        }
     }
 
     // MARK: Header
@@ -367,7 +378,6 @@ private struct EditProfileSheet: View {
     @State private var name: String
     @State private var bio: String
     @State private var isSaving = false
-    @FocusState private var bioFocused: Bool
     @Environment(\.dismiss) private var dismiss
 
     /// Instagram-style bio length cap.
@@ -408,7 +418,6 @@ private struct EditProfileSheet: View {
                     VStack(alignment: .trailing, spacing: 4) {
                         TextField("Describe yourself", text: $bio, axis: .vertical)
                             .lineLimit(3...5)
-                            .focused($bioFocused)
                             .padding(14)
                             .background(Color.grainField, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
                             .onChange(of: bio) { _, newValue in

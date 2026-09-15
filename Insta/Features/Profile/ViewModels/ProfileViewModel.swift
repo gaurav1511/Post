@@ -116,7 +116,9 @@ final class ProfileViewModel {
             avatarURL = cacheBusted(stored)
         } catch {
             errorMessage = error.localizedDescription
+            #if DEBUG
             debugPrint("Error uploading avatar: \(error)")
+            #endif
         }
     }
 
@@ -141,7 +143,7 @@ final class ProfileViewModel {
     private func cacheBusted(_ url: URL) -> URL {
         guard var components = URLComponents(url: url, resolvingAgainstBaseURL: false) else { return url }
         var items = components.queryItems ?? []
-        items.append(URLQueryItem(name: "t", value: String(Int(Date().timeIntervalSince1970))))
+        items.append(URLQueryItem(name: "t", value: UUID().uuidString))
         components.queryItems = items
         return components.url ?? url
     }
