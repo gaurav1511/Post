@@ -4,6 +4,7 @@ import SwiftUI
 /// the current Supabase session.
 struct ContentView: View {
     @State private var auth = AuthViewModel()
+    @AppStorage("appTheme") private var appTheme = AppTheme.dark
 
     var body: some View {
         Group {
@@ -13,13 +14,13 @@ struct ContentView: View {
                     .tint(Color.grainCoral)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .background(Color.grainBackground)
-                    .preferredColorScheme(.dark)
             } else if auth.isLoggedIn {
                 MainTabView()
             } else {
-                SignupView()
+                LoginView()
             }
         }
+        .preferredColorScheme(appTheme.colorScheme)
         .task { await auth.observe() }
     }
 }

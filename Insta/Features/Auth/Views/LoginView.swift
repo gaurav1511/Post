@@ -4,11 +4,12 @@ import SwiftUI
 
 /// Sign-in screen matching the "GRAIN" signup styling, backed by Supabase Auth.
 struct LoginView: View {
-    @Environment(\.dismiss) private var dismiss
     @State private var viewModel = LoginViewModel()
+    @State private var showSignup = false
 
     var body: some View {
-        ScrollView {
+        NavigationStack {
+            ScrollView {
             VStack(alignment: .leading, spacing: 20) {
                 header
                 heading
@@ -55,19 +56,17 @@ struct LoginView: View {
         } message: {
             Text(viewModel.errorMessage ?? "")
         }
+            .navigationDestination(isPresented: $showSignup) {
+                SignupView()
+            }
+            .toolbar(.hidden, for: .navigationBar)
+        }
     }
 
     // MARK: Sections
 
     private var header: some View {
         HStack {
-            Button {
-                dismiss()
-            } label: {
-                Image(systemName: "chevron.left")
-                    .font(.system(size: 18, weight: .semibold))
-                    .foregroundStyle(Color.grainTextPrimary)
-            }
             Spacer()
             Text("GRAIN")
                 .font(.system(size: 12, weight: .bold))
@@ -109,7 +108,7 @@ struct LoginView: View {
             Text("Don't have an account?")
                 .foregroundStyle(Color.grainTextMuted)
             Button {
-                dismiss()
+                showSignup = true
             } label: {
                 Text("Sign up")
                     .fontWeight(.bold)

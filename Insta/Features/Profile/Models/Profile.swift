@@ -58,4 +58,20 @@ struct Profile {
             ProfileTile()
         ]
     )
+
+    /// A blank profile with zeroed counts and no content, used until real data
+    /// is available so the screen shows genuine empty states instead of the
+    /// sample placeholders.
+    static let empty = Profile(
+        username: "",
+        displayName: "",
+        tagline: "",
+        subtitle: "",
+        link: "",
+        postsCount: "0",
+        followersCount: "0",
+        followingCount: "0",
+        highlights: [],
+        tiles: []
+    )
 }

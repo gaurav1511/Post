@@ -1,11 +1,38 @@
 import SwiftUI
 
-/// A circular placeholder avatar with a person glyph, matching the design's
-/// generic story/profile images.
+/// A circular avatar. When `url` is provided the remote image is loaded and
+/// clipped to the circle; otherwise it falls back to a person-glyph placeholder
+/// matching the design's generic story/profile images.
 struct AvatarCircle: View {
     var size: CGFloat
+    var url: URL? = nil
 
     var body: some View {
+        Group {
+            if let url {
+                AsyncImage(url: url) { phase in
+                    switch phase {
+                    case .success(let image):
+                        image
+                            .resizable()
+                            .scaledToFill()
+                    case .empty:
+                        placeholder.overlay { ProgressView() }
+                    case .failure:
+                        placeholder
+                    @unknown default:
+                        placeholder
+                    }
+                }
+            } else {
+                placeholder
+            }
+        }
+        .frame(width: size, height: size)
+        .clipShape(Circle())
+    }
+
+    private var placeholder: some View {
         Circle()
             .fill(
                 LinearGradient(
@@ -14,7 +41,6 @@ struct AvatarCircle: View {
                     endPoint: .bottom
                 )
             )
-            .frame(width: size, height: size)
             .overlay {
                 Image(systemName: "person.fill")
                     .font(.system(size: size * 0.5))

@@ -16,7 +16,6 @@ struct MainTabView: View {
             HomeTabBar(selection: $selectedTab)
         }
         .background(Color.grainBackground)
-        .preferredColorScheme(.dark)
     }
 
     @ViewBuilder
